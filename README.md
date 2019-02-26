@@ -9,12 +9,14 @@ lockScroll just tells React_Page_Scroller to not scroll.
 notMobile tells shopping cart if the pages inner width is that of a phone.
 
 checkout has not been built, but looks like the following to verify the products have been added:
+
   checkout = (products) => {
     this.setState({checkout: true})
     console.log(products);
   }
 
 addToCart creates the cart item that is passed to the app's state (cart):
+
   addToCart = (item) => {
     if (!this.state.cart.includes(item)){
       this.setState({
