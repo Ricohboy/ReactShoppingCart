@@ -1,0 +1,100 @@
+#Cart {
+    justify-content: center;
+}
+
+div.shoppingCart {
+    height: 90%;
+    width: 80%;
+    z-index: 2;
+    overflow-y:inherit;
+}
+
+div.checkout {
+    background-color: whitesmoke;
+    opacity: .5;
+    width: 20vw;
+    margin: auto;
+    font-size: .8rem;
+    cursor: pointer;
+}
+
+div.checkout:hover {
+    opacity: .8;
+}
+
+form {
+    width: 100%;
+}
+
+select{
+    font-size: .6rem;
+    width: 100%
+}
+
+input {
+    font-size: .6rem;
+    width: 80%
+}
+
+div.CartItem {
+    display: flex;
+    align-items: center;
+    height: 30vh;
+    width: 100%;
+    margin: 5% 0 5% 0;
+    text-align: left;
+    background-color: whitesmoke;
+    opacity: .8;
+    border-radius: 10px;
+}
+
+div.CartItem figure {
+    display: flex;
+    justify-content: center;
+    width: 50%;
+    height: 90%;
+    margin: 0 10px 0 5%;
+}
+
+div.CartItem figure img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: scale-down
+}
+
+table.ContentInformation {
+    font-size:.6rem;
+    width: 100%;
+}
+
+table.ContentInformation tr td:nth-child(1){
+    width: 33%;
+}
+
+table.ContentInformation tr td:nth-child(2){
+    width: 67%;
+}
+
+table.ContentInformation tr {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+@media only screen and (max-width: 600px) {
+    div.CartItem {
+        flex-direction: column;
+    }
+
+    div.CartItem figure {
+        width: 90%;
+        height: 50%;
+    }
+
+    div.CartItem figure img {
+        width: 90%;
+        height: auto;
+        margin: 0 5% 2% 5%;
+    }
+    
+}
