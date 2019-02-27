@@ -172,7 +172,6 @@ class ProductDisplay extends React.Component {
 
     //simple render function
     render() {
-        console.log(this.props)
         return (
             <div className="cartList">
                 {this.props.items.map((currImg, index)=><Display image={currImg} index={index} key={index} productCallBack={this.productCallBack} ppPrices={this.props.ppPrices} mgmPrices={this.props.mgmPrices} />
