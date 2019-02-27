@@ -2,6 +2,10 @@
 import React from 'react';
 import './ShoppingCart.css';
 
+//create an array of options to choos from
+export const Type=["Mid-Gloss Metal", "Photo Paper"]
+export const Size=["8x12", "12x18", "16x24", "20x30", "24x36"]
+
 //create a stateless component to display the shopping cart items
 export const ShoppingCart = (props) => {
     //if the shopping cart has no items, let user know the cart is empty.
@@ -15,14 +19,11 @@ export const ShoppingCart = (props) => {
         return (
         <div className="shoppingCart" id="shoppingCartScroll" onClick={(e) => props.lockScroll()}>
             <Header notMobile={props.notMobile}/>
-            <ProductDisplay items={props.items} checkout={props.checkout} ppPrices={props.ppPrices} mgmPrices={props.mgmPrices} />
+            <ProductDisplay removeItem={props.removeItem} productUpdate={props.productUpdate} items={props.items} checkout={props.checkout} ppPrices={props.ppPrices} mgmPrices={props.mgmPrices} />
         </div>)
     };
 }
 
-//create an array of options to choos from
-const Type=["Mid-Gloss Metal With Hanger", "Photo Paper"]
-const Size=["8x12", "12x18", "16x24", "20x30", "24x36"]
 
 
 //user will select which type of print they want.
@@ -65,8 +66,7 @@ class SizeSelector extends React.Component {
     constructor(props){
         super(props)
         this.state = {
-            size: Size[0],
-            price: null
+            size: Size[0]
         }
         this.handleChange = this.handleChange.bind(this);
     }
@@ -76,27 +76,24 @@ class SizeSelector extends React.Component {
         this.props.sizeCallBack(this.state.size);
     }
 
-    componentDidMount = async () => {
-        let tempPriceList;
-        if (this.props.type === 'MGM') {
-            tempPriceList = this.props.mgmPrices;
-        } else {
-            tempPriceList = this.props.ppPrices
-        }
-        await this.setState({
-            price: tempPriceList,
-        })
-        
-    }
-
     render(){
-        return(
-            <label>
-                <select value={this.state.value} onChange={(e) => this.handleChange(e)}>
-                    {this.state.price!==null && Size.map((size, index) => <option value={size} key={index}>{size} ${this.state.price[size]}.00</option>)}
-                </select>
-            </label>
-        )
+        if(this.props.type === Type[0]){
+            return(
+                <label>
+                    <select value={this.state.value} onChange={(e) => this.handleChange(e)}>
+                        {this.props.mgmPrices!==null && Size.map((size, index) => <option value={size} key={index}>{size} ${this.props.mgmPrices[size]}.00</option>)}
+                    </select>
+                </label>
+            )
+        } else {
+            return(
+                <label>
+                    <select value={this.state.value} onChange={(e) => this.handleChange(e)}>
+                        {this.props.ppPrices!==null && Size.map((size, index) => <option value={size} key={index}>{size} ${this.props.ppPrices[size]}.00</option>)}
+                    </select>
+                </label>
+            )
+        } 
     }
 }
 
@@ -138,10 +135,14 @@ class ProductDisplay extends React.Component {
         this.state = {
             products: [],
         }
+        this.productUpdate = this.productUpdate.bind(this);
+        this.handleCheckout = this.handleCheckout.bind(this);
     }
 
     //update products upon any change.
-    productCallBack = async (order, index) => {
+    productUpdate = async (size, type, index) => {
+        this.props.productUpdate(size, type, index);
+        /*todo: move below to app's add to cart
         //create a new array that takes in the products array
         let updatedProducts = this.state.products;
         //call the currImg item from the existing products array
@@ -150,13 +151,15 @@ class ProductDisplay extends React.Component {
         updatedProducts[index] = {currImg, order};
         //reset products array using .setState function
         await this.setState({products:updatedProducts});
+        */
     }
 
     //send product list to checkout.
     //todo: create checkout function
     handleCheckout = () => {
         console.log("Checkout Time Babay")
-        this.props.checkout(this.state.products)
+        //todo: change below to pull from app's cart products
+        //this.props.checkout(this.state.products)
     }
 
     //create initial product array once component mounts
@@ -172,7 +175,8 @@ class ProductDisplay extends React.Component {
     render() {
         return (
             <div className="cartList">
-                {this.props.items.map((currImg, index)=><Display image={currImg} index={index} key={index} productCallBack={this.productCallBack} ppPrices={this.props.ppPrices} mgmPrices={this.props.mgmPrices} />
+                {this.props.items.map((currItem, index)=> 
+                    <Display item={currItem} removeItem={this.props.removeItem} index={index} key={index} productUpdate={this.productUpdate} ppPrices={this.props.ppPrices} mgmPrices={this.props.mgmPrices} />
                 )}
                 <div className="checkoutButton" onClick={(e) => this.handleCheckout(e)}>Checkout</div>
             </div>
@@ -211,7 +215,7 @@ class Display extends React.Component{
             price: tempPrice,
             total: tempPrice*this.state.quantity
         })
-        this.props.productCallBack(this.state, this.props.index)
+        this.props.productUpdate(this.state.size, this.state.type, this.props.index)
     }
 
     //get quantity from child, then send to parent(ProductDisplay)
@@ -220,7 +224,7 @@ class Display extends React.Component{
             quantity: changedQuantity,
             total: this.state.price*changedQuantity
         })
-        this.props.productCallBack(this.state, this.props.index)
+        this.props.productUpdate(this.state.size, this.state.type, this.props.index)
     }
 
     //get product type from child, then send to parent(ProductDisplay)
@@ -236,8 +240,11 @@ class Display extends React.Component{
             price: tempPrice,
             total: tempPrice*this.state.quantity
         })
-        console.log(this.state)
-        this.props.productCallBack(this.state, this.props.index)
+        this.props.productUpdate(this.state.size, this.state.type, this.props.index)
+    }
+
+    removeItem = (index) => {
+        this.props.removeItem(index);
     }
 
     componentDidMount = async () => {
@@ -249,12 +256,15 @@ class Display extends React.Component{
     render() {
         return (
             <div key={this.props.index} className="CartItem">
-                <figure><img src={this.props.image.src} alt={this.props.image.name} id={this.props.index} /></figure>
+                <figure>
+                    <img src={this.props.item.Img.src} alt={this.props.item.Img.name} id={this.props.index} />
+                    <figcaption onClick={(e) => this.removeItem(this.props.index)}>Remove</figcaption>
+                </figure>
                 <form>
                     <table className="ContentInformation"><tbody>
                         <tr>
                             <td><b>Image Description: </b></td>
-                            <td>{this.props.image.description}</td>
+                            <td>{this.props.item.Img.description}</td>
                         </tr>
                         <tr>
                             <td><b>Size:</b></td>
@@ -270,11 +280,11 @@ class Display extends React.Component{
                         </tr>
                         <tr>
                             <td><b>Price Per:</b></td>
-                            <td>${this.state.price}.00</td>
+                            <td>{this.state.price}</td>
                         </tr>
                         <tr>
                             <td><b>Total:</b></td>
-                            <td>${this.state.total}.00</td>
+                            <td>{this.state.total}</td>
                         </tr>
                         </tbody></table>
                 </form>
