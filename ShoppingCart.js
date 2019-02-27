@@ -4,6 +4,7 @@ import './ShoppingCart.css';
 
 //create a stateless component to display the shopping cart items
 export const ShoppingCart = (props) => {
+    console.log(props)
     //if the shopping cart has no items, let user know the cart is empty.
     if (props.items.length === 0) {
         return (
@@ -11,18 +12,20 @@ export const ShoppingCart = (props) => {
                 <Header notMobile={props.notMobile}/>
                 Nothing in Cart
             </div>)
-    } else
+    } else{
+        console.log(props)
         return (
         <div className="shoppingCart" id="shoppingCartScroll" onClick={(e) => props.lockScroll()}>
             <Header notMobile={props.notMobile}/>
-            <ProductDisplay items={props.items} checkout={props.checkout}/>
+            <ProductDisplay items={props.items} checkout={props.checkout} ppPrices={props.ppPrices} mgmPrices={props.mgmPrices} />
         </div>)
-    ;
+    };
 }
 
 //create an array of options to choos from
-const Type=["Metalic Gloss", "Photo Paper"]
+const Type=["Mid-Gloss Metal With Hanger", "Photo Paper"]
 const Size=["8x12", "12x18", "16x24", "20x30", "24x36"]
+
 
 //user will select which type of print they want.
 class TypeSelector extends React.Component {
@@ -36,7 +39,7 @@ class TypeSelector extends React.Component {
     }
 
     //create an event handler function when the user changes options.
-    //needs to be an async/await function to allow for the state to change before using callback function
+    //needs to be an async/await function to allow for the state to change 
     handleChange = async (e) => {
         await this.setState({type: e.target.value});
         this.props.typeCallBack(this.state.type);
@@ -65,6 +68,7 @@ class SizeSelector extends React.Component {
         super(props)
         this.state = {
             size: Size[0],
+            price: null
         }
         this.handleChange = this.handleChange.bind(this);
     }
@@ -74,15 +78,24 @@ class SizeSelector extends React.Component {
         this.props.sizeCallBack(this.state.size);
     }
 
-    sizes = Size.map((size, index) =>
-        <option value={size} key={index}>{size}</option>
-    )
+    componentDidMount = async () => {
+        let tempPriceList;
+        if (this.props.type === 'MGM') {
+            tempPriceList = this.props.mgmPrices;
+        } else {
+            tempPriceList = this.props.ppPrices
+        }
+        await this.setState({
+            price: tempPriceList,
+        })
+        
+    }
 
     render(){
         return(
             <label>
                 <select value={this.state.value} onChange={(e) => this.handleChange(e)}>
-                    {this.sizes}
+                    {this.state.price!==null && Size.map((size, index) => <option value={size} key={index}>{size} ${this.state.price[size]}.00</option>)}
                 </select>
             </label>
         )
@@ -148,11 +161,6 @@ class ProductDisplay extends React.Component {
         this.props.checkout(this.state.products)
     }
 
-    //go through each item sent to the cart to display
-    cartList = this.props.items.map((currImg, index)=> 
-        <Display image={currImg} index={index} key={index} productCallBack={this.productCallBack}/>
-    )
-
     //create initial product array once component mounts
     componentDidMount = async () => {
         let productList = [];
@@ -164,10 +172,12 @@ class ProductDisplay extends React.Component {
 
     //simple render function
     render() {
+        console.log(this.props)
         return (
             <div className="cartList">
-                {this.cartList}
-                <div className="checkout" onClick={(e) => this.handleCheckout(e)}>Checkout</div>
+                {this.props.items.map((currImg, index)=><Display image={currImg} index={index} key={index} productCallBack={this.productCallBack} ppPrices={this.props.ppPrices} mgmPrices={this.props.mgmPrices} />
+                )}
+                <div className="checkoutButton" onClick={(e) => this.handleCheckout(e)}>Checkout</div>
             </div>
         )
     }
@@ -181,7 +191,9 @@ class Display extends React.Component{
         this.state = {
             size: Size[0],
             type: Type[0],
-            quantity: 1
+            quantity: 1,
+            price: 0,
+            total: 0
         }
 
         this.sizeCallBack = this.sizeCallBack.bind(this);
@@ -191,8 +203,16 @@ class Display extends React.Component{
 
     //get sizes from child, then send to parent(ProductDisplay)
     sizeCallBack = async (changedSize) => {
+        let tempPrice;
+        if (this.type === Type[0]){
+            tempPrice = this.props.mgmPrices[changedSize]
+        } else {
+            tempPrice = this.props.ppPrices[changedSize]
+        }
         await this.setState({
-            size: changedSize
+            size: changedSize,
+            price: tempPrice,
+            total: tempPrice*this.state.quantity
         })
         this.props.productCallBack(this.state, this.props.index)
     }
@@ -200,17 +220,32 @@ class Display extends React.Component{
     //get quantity from child, then send to parent(ProductDisplay)
     quantityCallBack = (changedQuantity) => {
         this.setState({
-            quantity: changedQuantity
+            quantity: changedQuantity,
+            total: this.state.price*changedQuantity
         })
         this.props.productCallBack(this.state, this.props.index)
     }
 
     //get product type from child, then send to parent(ProductDisplay)
     typeCallBack = (changedType) => {
+        let tempPrice;
+        if (changedType === Type[0]){
+            tempPrice = this.props.mgmPrices[this.state.size]
+        } else {
+            tempPrice = this.props.ppPrices[this.state.size]
+        }
         this.setState({
-            type: changedType
+            type: changedType,
+            price: tempPrice,
+            total: tempPrice*this.state.quantity
         })
+        console.log(this.state)
         this.props.productCallBack(this.state, this.props.index)
+    }
+
+    componentDidMount = async () => {
+        const tempPrice = await this.props.mgmPrices[this.state.size];
+        this.setState({price: tempPrice, total: tempPrice*this.state.quantity})
     }
 
     //render individual item
@@ -226,7 +261,7 @@ class Display extends React.Component{
                         </tr>
                         <tr>
                             <td><b>Size:</b></td>
-                            <td><SizeSelector sizeCallBack={this.sizeCallBack} /></td>
+                            <td><SizeSelector sizeCallBack={this.sizeCallBack} ppPrices={this.props.ppPrices} mgmPrices={this.props.mgmPrices} type={this.state.type} /></td>
                         </tr>
                         <tr>
                             <td><b>Type:</b></td>
@@ -235,6 +270,14 @@ class Display extends React.Component{
                         <tr>
                             <td><b>Quantity:</b></td>
                             <Quantity quantityCallBack={this.quantityCallBack} />
+                        </tr>
+                        <tr>
+                            <td><b>Price Per:</b></td>
+                            <td>{this.state.price}</td>
+                        </tr>
+                        <tr>
+                            <td><b>Total:</b></td>
+                            <td>{this.state.total}</td>
                         </tr>
                         </tbody></table>
                 </form>
@@ -251,6 +294,3 @@ const Header = (props) =>{
         return(<h3>Shopping Cart</h3>)
     }
 }
-
-
-export default ShoppingCart;

@@ -9,7 +9,7 @@ div.shoppingCart {
     overflow-y:inherit;
 }
 
-div.checkout {
+div.checkoutButton {
     background-color: whitesmoke;
     opacity: .5;
     width: 20vw;
@@ -18,7 +18,7 @@ div.checkout {
     cursor: pointer;
 }
 
-div.checkout:hover {
+div.checkoutButton:hover {
     opacity: .8;
 }
 
@@ -53,7 +53,7 @@ div.CartItem figure {
     justify-content: center;
     width: 50%;
     height: 90%;
-    margin: 0 10px 0 5%;
+    margin: 0 10px 0 10px;
 }
 
 div.CartItem figure img {
