@@ -4,7 +4,6 @@ import './ShoppingCart.css';
 
 //create a stateless component to display the shopping cart items
 export const ShoppingCart = (props) => {
-    console.log(props)
     //if the shopping cart has no items, let user know the cart is empty.
     if (props.items.length === 0) {
         return (
@@ -13,7 +12,6 @@ export const ShoppingCart = (props) => {
                 Nothing in Cart
             </div>)
     } else{
-        console.log(props)
         return (
         <div className="shoppingCart" id="shoppingCartScroll" onClick={(e) => props.lockScroll()}>
             <Header notMobile={props.notMobile}/>
@@ -272,11 +270,11 @@ class Display extends React.Component{
                         </tr>
                         <tr>
                             <td><b>Price Per:</b></td>
-                            <td>{this.state.price}</td>
+                            <td>${this.state.price}.00</td>
                         </tr>
                         <tr>
                             <td><b>Total:</b></td>
-                            <td>{this.state.total}</td>
+                            <td>${this.state.total}.00</td>
                         </tr>
                         </tbody></table>
                 </form>
