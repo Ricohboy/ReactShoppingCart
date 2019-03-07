@@ -1,5 +1,7 @@
 #Cart {
-    justify-content: center;
+    justify-content: end;
+    flex-direction: column;
+    align-items: center;
 }
 
 div.shoppingCart {
@@ -9,8 +11,11 @@ div.shoppingCart {
     overflow-y:inherit;
 }
 
-div.checkoutButton {
+div.checkoutButton,
+div.shipmentButton,
+div.submitButton {
     background-color: whitesmoke;
+    border-radius: 5px;
     opacity: .5;
     width: 20vw;
     margin: auto;
@@ -18,7 +23,9 @@ div.checkoutButton {
     cursor: pointer;
 }
 
-div.checkoutButton:hover {
+div.checkoutButton:hover,
+div.shipmentButton:hover,
+div.submitButton:hover {
     opacity: .8;
 }
 
@@ -28,12 +35,14 @@ form {
 
 select{
     font-size: .6rem;
-    width: 100%
+    width: 60%;
+    float: right;
 }
 
 input {
     font-size: .6rem;
-    width: 80%
+    width: 60%;
+    float: right;
 }
 
 div.CartItem {

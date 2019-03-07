@@ -4,7 +4,7 @@ import './ShoppingCart.css';
 
 //create an array of options to choos from
 export const Type=["Mid-Gloss Metal", "Photo Paper"]
-export const Size=["8x12", "12x18", "16x24", "20x30", "24x36"]
+export const Size=["8x12", "16x24", "20x30", "24x36"]
 
 //create a stateless component to display the shopping cart items
 export const ShoppingCart = (props) => {
@@ -13,18 +13,63 @@ export const ShoppingCart = (props) => {
         return (
             <div className="EmptyCart">
                 <Header notMobile={props.notMobile}/>
-                Nothing in Cart
+                Nothing in Cart, add something or enter order number below.
+                <OrderInput checkOrder={props.checkOrder} />
             </div>)
     } else{
         return (
-        <div className="shoppingCart" id="shoppingCartScroll" onClick={(e) => props.lockScroll()}>
+        <div className="shoppingCart" id="shoppingCartScroll" onClick={(e) => props.lockScroll(e)}>
             <Header notMobile={props.notMobile}/>
             <ProductDisplay removeItem={props.removeItem} productUpdate={props.productUpdate} items={props.items} checkout={props.checkout} ppPrices={props.ppPrices} mgmPrices={props.mgmPrices} />
         </div>)
     };
 }
 
+class OrderInput extends React.Component {
+    constructor (props) {
+        super(props);
+        this.state = {
+            userInputId: '',
+        }
+        this.handleUserInput = this.handleUserInput.bind(this);
+        this.checkOrder = this.checkOrder.bind(this);
+    }
 
+    handleUserInput(event) {
+      const target = event.target;
+      const name = target.name;
+      const value = target.value;
+  
+      this.setState({
+        [name]: value
+      });
+    }
+
+    checkOrder(){
+        if (this.state.userInputId!==''){
+            this.props.checkOrder(this.state.userInputId.trim())
+        }
+    }
+
+    render() {
+        return (
+            <form>
+                <label>
+                    OrderId:
+                    <input
+                        type="text"
+                        name="userInputId"
+                        value={this.state.userInputId}
+                        onChange={event => this.handleUserInput(event)}
+                    />
+                    <div className="submitButton" onClick={(e)=>this.checkOrder()}>
+                      Submit
+                    </div>
+                </label>
+            </form>
+        )
+    }
+}
 
 //user will select which type of print they want.
 class TypeSelector extends React.Component {
@@ -122,7 +167,7 @@ class Quantity extends React.Component {
                     value={this.state.quantity}
                     onChange={this.handleQuantityChange}
                     max="10"
-                    min="0"/>
+                    min="1"/>
             </td>
         )
     }
@@ -132,43 +177,12 @@ class Quantity extends React.Component {
 class ProductDisplay extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            products: [],
-        }
         this.productUpdate = this.productUpdate.bind(this);
-        this.handleCheckout = this.handleCheckout.bind(this);
     }
 
     //update products upon any change.
-    productUpdate = async (size, type, index) => {
-        this.props.productUpdate(size, type, index);
-        /*todo: move below to app's add to cart
-        //create a new array that takes in the products array
-        let updatedProducts = this.state.products;
-        //call the currImg item from the existing products array
-        const currImg = updatedProducts[index].currImg;
-        //update the item in the mutable array to add changes to the order
-        updatedProducts[index] = {currImg, order};
-        //reset products array using .setState function
-        await this.setState({products:updatedProducts});
-        */
-    }
-
-    //send product list to checkout.
-    //todo: create checkout function
-    handleCheckout = () => {
-        console.log("Checkout Time Babay")
-        //todo: change below to pull from app's cart products
-        //this.props.checkout(this.state.products)
-    }
-
-    //create initial product array once component mounts
-    componentDidMount = async () => {
-        let productList = [];
-        await this.props.items.map((currImg) => 
-            productList.push({currImg, order: {size: Size[0], type: Type[0], quantity: 1}})
-        )
-        this.setState({products:productList})
+    productUpdate = (size, type, quantity, index) => {
+        this.props.productUpdate(size, type, quantity, index);
     }
 
     //simple render function
@@ -178,7 +192,7 @@ class ProductDisplay extends React.Component {
                 {this.props.items.map((currItem, index)=> 
                     <Display item={currItem} removeItem={this.props.removeItem} index={index} key={index} productUpdate={this.productUpdate} ppPrices={this.props.ppPrices} mgmPrices={this.props.mgmPrices} />
                 )}
-                <div className="checkoutButton" onClick={(e) => this.handleCheckout(e)}>Checkout</div>
+                <div className="checkoutButton" onClick={(e) => this.props.checkout()}>Checkout</div>
             </div>
         )
     }
@@ -215,7 +229,7 @@ class Display extends React.Component{
             price: tempPrice,
             total: tempPrice*this.state.quantity
         })
-        this.props.productUpdate(this.state.size, this.state.type, this.props.index)
+        this.props.productUpdate(this.state.size, this.state.type, this.state.quantity, this.props.index)
     }
 
     //get quantity from child, then send to parent(ProductDisplay)
@@ -224,7 +238,7 @@ class Display extends React.Component{
             quantity: changedQuantity,
             total: this.state.price*changedQuantity
         })
-        this.props.productUpdate(this.state.size, this.state.type, this.props.index)
+        this.props.productUpdate(this.state.size, this.state.type, this.state.quantity, this.props.index)
     }
 
     //get product type from child, then send to parent(ProductDisplay)
@@ -240,7 +254,7 @@ class Display extends React.Component{
             price: tempPrice,
             total: tempPrice*this.state.quantity
         })
-        this.props.productUpdate(this.state.size, this.state.type, this.props.index)
+        this.props.productUpdate(this.state.size, this.state.type, this.state.quantity, this.props.index)
     }
 
     removeItem = (index) => {
@@ -280,11 +294,11 @@ class Display extends React.Component{
                         </tr>
                         <tr>
                             <td><b>Price Per:</b></td>
-                            <td>{this.state.price}</td>
+                            <td>${this.state.price}.00</td>
                         </tr>
                         <tr>
                             <td><b>Total:</b></td>
-                            <td>{this.state.total}</td>
+                            <td>${this.state.total}.00</td>
                         </tr>
                         </tbody></table>
                 </form>
