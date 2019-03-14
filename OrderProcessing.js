@@ -61,7 +61,6 @@ class OrderProcessing extends React.Component {
 
     //sends user back to cart
     //called from shopping cart page
-    //todo: allow user to update values if they return to cart
     backToCart = () => {
         this.setState({
           cart: true,
