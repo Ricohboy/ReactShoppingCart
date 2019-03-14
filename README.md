@@ -8,12 +8,12 @@ A customizable file that my app calls to create a list of products a user wants 
 lockScroll just tells React_Page_Scroller to not scroll.
 notMobile tells shopping cart if the pages inner width is that of a phone.
 
-checkout has not been built, but looks like the following to verify the products have been added:
+See live demo at https://green-owl-photography.firebaseapp.com/
 
-  checkout = (products) => {
-    this.setState({checkout: true})
-    console.log(products);
-  }
+Still to do:
+-Add payment with Stripe and Google Pay
+-Verify order
+-Clean up formatting
 
 addToCart creates the cart item that is passed to the app's state (cart):
 
