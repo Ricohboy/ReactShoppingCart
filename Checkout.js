@@ -4,14 +4,33 @@ import React from 'react';
 import {Type} from './ShoppingCart'
 
 //create a stateless component to display the shopping cart items
-export const Checkout = (props) => {
-    return (
-    <div className="shoppingCart">
-        <h3>Please Confirm Your Order.</h3>
-        <h4>Close checkout to return to Cart</h4>
-        <ProductDisplay items={props.items} shipment={props.shipment} ppPrices={props.ppPrices} mgmPrices={props.mgmPrices} />
-    </div>
-    )
+class Checkout extends React.Component {
+
+    subtotal = () => {
+        let tempSubtotal = 0
+        this.props.items.map((currItem) => {
+            const size = currItem.order.size
+            if (currItem.order.type === Type[0]){
+                tempSubtotal += this.props.mgmPrices[size]
+            } else {
+                tempSubtotal += this.props.ppPrices[size]
+            }
+            return null;
+        })
+        return tempSubtotal
+    }
+
+    render(){
+        const subtotal = this.subtotal();
+        return (
+        <div className="shoppingCart">
+            <h3>Please Confirm Your Order.</h3>
+            <h4>Close checkout to return to Cart</h4>
+            <h4>Current Subtotal: ${subtotal}.00</h4>
+            <ProductDisplay subtotal={subtotal} items={this.props.items} shipment={this.props.shipment} ppPrices={this.props.ppPrices} mgmPrices={this.props.mgmPrices} />
+        </div>
+        )
+    }
 }
 
 const ProductDisplay = (props) => {
@@ -20,7 +39,7 @@ const ProductDisplay = (props) => {
         {props.items.map((currItem, index)=> 
             <Display key={index} index={index} item={currItem} ppPrices={props.ppPrices} mgmPrices={props.mgmPrices} />
         )}
-        <div className="shipmentButton" onClick={(e) => props.shipment()}>Shipment</div>
+        <div className="shipmentButton" onClick={(e) => props.shipment(props.subtotal)}>Save and Continue</div>
     </div>
     )
 }
@@ -40,13 +59,14 @@ class Display extends React.Component{
     componentDidMount = async () => {
         let tempPrice;
         const size = this.props.item.order.size
-        if (this.props.item.type === Type[0]){
+        if (this.props.item.order.type === Type[0]){
             tempPrice = this.props.mgmPrices[size]
         } else {
             tempPrice = this.props.ppPrices[size]
         }
         this.setState({price: tempPrice, total: tempPrice*this.props.item.order.quantity})
     }
+
     //render individual item
     render() {
         return (
@@ -54,8 +74,8 @@ class Display extends React.Component{
                 <figure>
                     <img src={this.props.item.Img.src} alt={this.props.item.Img.name} id={this.props.index} />
                 </figure>
-                <form>
-                    <table className="ContentInformation"><tbody>
+                    <table className="ContentInformation">
+                    <tbody>
                         <tr>
                             <td><b>Image Description: </b></td>
                             <td>{this.props.item.Img.description}</td>
@@ -80,9 +100,11 @@ class Display extends React.Component{
                             <td><b>Total:</b></td>
                             <td>${this.state.total}.00</td>
                         </tr>
-                        </tbody></table>
-                </form>
+                    </tbody>
+                    </table>
             </div>
         )
     }
 }
+
+export default Checkout;

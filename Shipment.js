@@ -1,5 +1,7 @@
 import React from "react";
 
+import firebase from "../../Firebase";
+
 const states = [
   "AL",  "AK",  "AS",  "AZ",  "AR",  "CA",  "CO",  "CT",
   "DE",  "DC",  "FM",  "FL",  "GA",  "GU",  "HI",  "ID",
@@ -13,11 +15,11 @@ const states = [
 //create a stateless component to display the shopping cart items
 export const Shipment = props => {
   return (
-    <div className="shoppingCart">
+    <div className="shoppingCart" onClick={(e) => props.lockScroll(e)}>
       <h3>
         Enter Your Shipping Details Below. We can only ship inside the US.
       </h3>
-      <ShipmentForm addShipmentToDb={props.addShipmentToDb} shipmentInfo={props.shipmentInfo}/>
+      <ShipmentForm payment={props.payment} userId={props.userId} shipmentInfo={props.shipmentInfo} />
     </div>
   );
 };
@@ -27,18 +29,18 @@ class SubmitButton extends React.Component {
     super(props);
     this.state = {
         hasSubmitted: false,
-        message: "Click to validate and submit"
+        message: "Submit"
     }
     this.handleSubmission = this.handleSubmission.bind(this);
   }
 
-  handleSubmission = () => {
+  handleSubmission = (defAddr) => {
     this.setState({hasSubmitted: true});
-    this.props.handleSubmit()
+    this.props.handleSubmit(defAddr)
   }
 
-  validate(){
-    if (this.props.canSubmit) {this.handleSubmission()}
+  validate(defAddr){
+    if (this.props.canSubmit) {this.handleSubmission(defAddr)}
     else {this.setState({message: "Form not valid! Click again when ready."})}
   }
   
@@ -51,8 +53,16 @@ class SubmitButton extends React.Component {
       )
     } else {
       return (
-        <div className="submitButton" onClick={(e)=>this.validate()}>
-          {this.state.message}
+        <div>
+          <div className="submitButton" onClick={(e)=>this.validate(false)}>
+            Use Once<br/>
+            {this.state.message}
+          </div>
+          <br/>
+          <div className="submitButton" onClick={(e)=>this.validate(true)}>
+            Set As Default<br/>
+            {this.state.message}
+          </div>
         </div>
       )
     }
@@ -90,18 +100,30 @@ class ShipmentForm extends React.Component {
     });
   }
 
-  //create all the options from the type array
+  //create all the State options from the State array
   stateList = states.map((state, index) => (
     <option key={index}>{state}</option>
   ));
 
-  handleSubmit = () => {
-    this.props.addShipmentToDb(this.state)
-  }
-
-  componentDidMount(){
-    if (this.props.shipmentInfo !== {}){this.setState(this.props.shipmentInfo)}
-  }
+  handleSubmit = async (defAddr) => {
+    //1. create a reference to where the shipment info will be stored in database
+    const userRef = firebase.firestore().collection('User/').doc(this.props.userId);
+    //2. function to push shipment info to order data
+    try {
+      //2a. push items to database
+      let dbResponse
+      if(defAddr) {dbResponse = await userRef.update({shipmentInfo: this.state, defaultAddress:this.state});
+      } else {dbResponse = await userRef.update({shipmentInfo: this.state});}
+      this.props.payment();
+      return dbResponse;
+    } catch (error) {
+      console.error(error);
+      alert('There seems to have been an issue creating your order.  Please try again.')
+      //2b. if there is an error, return error
+      return error;
+    }
+  };
+  
 
   validate = () => {
     let submit = true;
@@ -109,14 +131,17 @@ class ShipmentForm extends React.Component {
       if (i !== "address2") {
         if (this.state[i] === "") {
           submit = false;
-          //todo:add function that changes invalid data's text box red
-          /*console.log(i)
-          const ele = document.getElementsByName(i);
-          console.log(ele);*/
         }
       }
+      return null;
     });
     return submit;
+  }
+
+  componentDidMount(){
+    if (this.props.shipmentInfo !== {}) {
+        this.setState(this.props.shipmentInfo)
+      }
   }
 
   render() {
@@ -131,7 +156,7 @@ class ShipmentForm extends React.Component {
             onChange={event => this.handleUserInput(event)}
           />
         </label>
-        <br />
+        
         <label>
           Address 1:
           <input
@@ -141,7 +166,7 @@ class ShipmentForm extends React.Component {
             onChange={event => this.handleUserInput(event)}
           />
         </label>
-        <br />
+        
         <label>
           Address 2:
           <input
@@ -151,19 +176,16 @@ class ShipmentForm extends React.Component {
             onChange={event => this.handleUserInput(event)}
           />
         </label>
-        <br />
+        
         <label>
-          City:
+          City, State:
           <input
             type="text"
             name="addressTownOrCity"
+            className="city"
             value={this.state.addressTownOrCity}
             onChange={event => this.handleUserInput(event)}
           />
-        </label>
-        <br />
-        <label>
-          State:
           <select
             name="stateOrCounty"
             value={this.state.stateOrCounty}
@@ -172,7 +194,7 @@ class ShipmentForm extends React.Component {
             {this.stateList}
           </select>
         </label>
-        <br />
+        
         <label>
           ZipCode:
           <input
@@ -182,7 +204,7 @@ class ShipmentForm extends React.Component {
             onChange={event => this.handleUserInput(event)}
           />
         </label>
-        <br />
+        
         <label>
           eMail:
           <input

@@ -13,8 +13,7 @@ export const ShoppingCart = (props) => {
         return (
             <div className="EmptyCart">
                 <Header notMobile={props.notMobile}/>
-                Nothing in Cart, add something or enter order number below.
-                <OrderInput checkOrder={props.checkOrder} />
+                Nothing in Cart, please add something.
             </div>)
     } else{
         return (
@@ -25,65 +24,19 @@ export const ShoppingCart = (props) => {
     };
 }
 
-class OrderInput extends React.Component {
-    constructor (props) {
-        super(props);
-        this.state = {
-            userInputId: '',
-        }
-        this.handleUserInput = this.handleUserInput.bind(this);
-        this.checkOrder = this.checkOrder.bind(this);
-    }
-
-    handleUserInput(event) {
-      const target = event.target;
-      const name = target.name;
-      const value = target.value;
-  
-      this.setState({
-        [name]: value
-      });
-    }
-
-    checkOrder(){
-        if (this.state.userInputId!==''){
-            this.props.checkOrder(this.state.userInputId.trim())
-        }
-    }
-
-    render() {
-        return (
-            <form>
-                <label>
-                    OrderId:
-                    <input
-                        type="text"
-                        name="userInputId"
-                        value={this.state.userInputId}
-                        onChange={event => this.handleUserInput(event)}
-                    />
-                    <div className="submitButton" onClick={(e)=>this.checkOrder()}>
-                      Submit
-                    </div>
-                </label>
-            </form>
-        )
-    }
-}
-
 //user will select which type of print they want.
 class TypeSelector extends React.Component {
     //create the state, choose the first option in array to allow for rapid changes
     constructor(props){
         super(props)
         this.state = {
-            type: Type[0],
+            type: this.props.type,
         }
+
         this.handleChange = this.handleChange.bind(this);
     }
 
     //create an event handler function when the user changes options.
-    //needs to be an async/await function to allow for the state to change 
     handleChange = async (e) => {
         await this.setState({type: e.target.value});
         this.props.typeCallBack(this.state.type);
@@ -98,7 +51,7 @@ class TypeSelector extends React.Component {
     render(){
         return(
             <label>
-                <select value={this.state.value} onChange={(e) => this.handleChange(e)}>
+                <select value={this.state.type} onChange={(e) => this.handleChange(e)}>
                     {this.types}
                 </select>
             </label>
@@ -111,7 +64,7 @@ class SizeSelector extends React.Component {
     constructor(props){
         super(props)
         this.state = {
-            size: Size[0]
+            size: this.props.size,
         }
         this.handleChange = this.handleChange.bind(this);
     }
@@ -125,7 +78,7 @@ class SizeSelector extends React.Component {
         if(this.props.type === Type[0]){
             return(
                 <label>
-                    <select value={this.state.value} onChange={(e) => this.handleChange(e)}>
+                    <select value={this.state.size} onChange={(e) => this.handleChange(e)}>
                         {this.props.mgmPrices!==null && Size.map((size, index) => <option value={size} key={index}>{size} ${this.props.mgmPrices[size]}.00</option>)}
                     </select>
                 </label>
@@ -133,7 +86,7 @@ class SizeSelector extends React.Component {
         } else {
             return(
                 <label>
-                    <select value={this.state.value} onChange={(e) => this.handleChange(e)}>
+                    <select value={this.state.size} onChange={(e) => this.handleChange(e)}>
                         {this.props.ppPrices!==null && Size.map((size, index) => <option value={size} key={index}>{size} ${this.props.ppPrices[size]}.00</option>)}
                     </select>
                 </label>
@@ -144,10 +97,10 @@ class SizeSelector extends React.Component {
 
 //similar function to TypeSelector, see notes on TypeSelector
 class Quantity extends React.Component {
-    constructor(){
-        super()
+    constructor(props){
+        super(props)
         this.state = {
-            quantity: 1,
+            quantity: this.props.quantity,
         }
         this.handleQuantityChange = this.handleQuantityChange.bind(this);
     }
@@ -204,11 +157,9 @@ class Display extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            size: Size[0],
-            type: Type[0],
-            quantity: 1,
-            price: 0,
-            total: 0
+            size: this.props.item.order.size,
+            type: this.props.item.order.type,
+            quantity: this.props.item.order.quantity,
         }
 
         this.sizeCallBack = this.sizeCallBack.bind(this);
@@ -219,12 +170,12 @@ class Display extends React.Component{
     //get sizes from child, then send to parent(ProductDisplay)
     sizeCallBack = async (changedSize) => {
         let tempPrice;
-        if (this.type === Type[0]){
+        if (this.state.type === Type[0]){
             tempPrice = this.props.mgmPrices[changedSize]
         } else {
             tempPrice = this.props.ppPrices[changedSize]
         }
-        await this.setState({
+        this.setState({
             size: changedSize,
             price: tempPrice,
             total: tempPrice*this.state.quantity
@@ -262,8 +213,13 @@ class Display extends React.Component{
     }
 
     componentDidMount = async () => {
-        const tempPrice = await this.props.mgmPrices[this.state.size];
-        this.setState({price: tempPrice, total: tempPrice*this.state.quantity})
+        let tempPrice;
+        if (this.props.item.order.type === Type[0]){
+            tempPrice = this.props.mgmPrices[this.props.item.order.size]
+        } else {
+            tempPrice = this.props.ppPrices[this.props.item.order.size]
+        }
+        this.setState({price: tempPrice, total: tempPrice*this.props.item.order.quantity})
     }
 
     //render individual item
@@ -282,15 +238,15 @@ class Display extends React.Component{
                         </tr>
                         <tr>
                             <td><b>Size:</b></td>
-                            <td><SizeSelector sizeCallBack={this.sizeCallBack} ppPrices={this.props.ppPrices} mgmPrices={this.props.mgmPrices} type={this.state.type} /></td>
+                            <td><SizeSelector sizeCallBack={this.sizeCallBack} ppPrices={this.props.ppPrices} mgmPrices={this.props.mgmPrices} type={this.state.type} size={this.state.size} /></td>
                         </tr>
                         <tr>
                             <td><b>Type:</b></td>
-                            <td><TypeSelector typeCallBack={this.typeCallBack} /></td>
+                            <td><TypeSelector typeCallBack={this.typeCallBack} type={this.state.type} /></td>
                         </tr>
                         <tr>
                             <td><b>Quantity:</b></td>
-                            <Quantity quantityCallBack={this.quantityCallBack} />
+                            <Quantity quantityCallBack={this.quantityCallBack} quantity={this.state.quantity} />
                         </tr>
                         <tr>
                             <td><b>Price Per:</b></td>
