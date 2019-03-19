@@ -19,10 +19,87 @@ export const Shipment = props => {
       <h3>
         Enter Your Shipping Details Below. We can only ship inside the US.
       </h3>
-      <ShipmentForm payment={props.payment} userId={props.userId} shipmentInfo={props.shipmentInfo} />
+      <UseDefault userId={props.userId} pwintyId={props.pwintyId} payment={props.payment} />
+      <ShipmentForm pwintyId={props.pwintyId} payment={props.payment} userId={props.userId} />
     </div>
   );
 };
+
+class UseDefault extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {DefaultAddr:{}}
+  }
+
+  handleSubmit = async () => {
+    //1. create a reference to where the shipment info will be stored in database
+    const userRef = firebase.firestore().collection('User/').doc(this.props.userId);
+    if (this.props.pwintyId){
+      //2. function to update shipment info to order data
+      try {
+        //2a. push items to database
+        //todo: add push to database if shipment info is default for userData
+        const dbResponse = await userRef.collection('/CurrentOrder').doc('shipmentInfo').update(this.state.DefaultAddr);
+        this.props.payment();
+        return dbResponse;
+      } catch (error) {
+        console.error(error);
+        alert('There seems to have been an issue creating your order.  Please try again.')
+        //2b. if there is an error, return error
+        return error;
+      }
+    } else {
+      //2. create shipment info and pwinty order
+      try {
+        //2a. push items to database
+        //todo: add push to database if shipment info is default for userData
+        const dbResponse = await userRef.collection('/CurrentOrder').doc('shipmentInfo').set(this.state.DefaultAddr);
+        this.props.payment();
+        return dbResponse;
+      } catch (error) {
+        console.error(error);
+        alert('There seems to have been an issue creating your order.  Please try again.')
+        //2b. if there is an error, return error
+        return error;
+      }
+    }
+  };
+
+  componentDidMount = async () => {
+    //1. Check to see if there is a default address in database
+    const reference = firebase.firestore().collection('User/').doc(this.props.userId).collection('UserInfo/').doc('DefaultAddr');
+    //2. Pull default address from database
+    const defAddrData = await reference.get();
+    //3. Convert Default address
+    const defAddr = defAddrData.data()
+    //4. Check to see if there is any info in the default address
+    if(defAddr !== {}){
+      //5. if there is, set the state for a re-render
+      this.setState({DefaultAddr:defAddr})
+    }
+  }
+
+  render () {
+    //create an array of keys
+    const keys = Object.keys(this.state.DefaultAddr);
+    //1. return an option to use the default address
+    //only if there are any keys in the default address item
+    if (keys.length !== 0) {
+      return (
+        <div className="submitButton" onClick={(e)=>this.handleSubmit()}>
+          Use Default:<br/>
+          {this.state.DefaultAddr.recipientName}<br/>
+          {this.state.DefaultAddr.address1}<br/>
+          {this.state.DefaultAddr.address2!=="" && this.state.DefaultAddr.address2}
+          {this.state.DefaultAddr.address2!=="" && <br/>}
+          {this.state.DefaultAddr.addressTownOrCity}, {this.state.DefaultAddr.stateOrCounty} {this.state.DefaultAddr.postalOrZipCode}<br/>
+        </div>
+      )
+    }
+    //1a. No default address specified. 
+    else {return null}
+  }
+}
 
 class SubmitButton extends React.Component {
   constructor(props) {
@@ -108,19 +185,37 @@ class ShipmentForm extends React.Component {
   handleSubmit = async (defAddr) => {
     //1. create a reference to where the shipment info will be stored in database
     const userRef = firebase.firestore().collection('User/').doc(this.props.userId);
-    //2. function to push shipment info to order data
-    try {
-      //2a. push items to database
-      let dbResponse
-      if(defAddr) {dbResponse = await userRef.update({shipmentInfo: this.state, defaultAddress:this.state});
-      } else {dbResponse = await userRef.update({shipmentInfo: this.state});}
-      this.props.payment();
-      return dbResponse;
-    } catch (error) {
-      console.error(error);
-      alert('There seems to have been an issue creating your order.  Please try again.')
-      //2b. if there is an error, return error
-      return error;
+    if(defAddr){
+      userRef.collection('UserInfo/').doc('DefaultAddr').update(this.state);
+    }
+    if (this.props.pwintyId){
+      //2. function to update shipment info to order data
+      try {
+        //2a. push items to database
+        //todo: add push to database if shipment info is default for userData
+        const dbResponse = await userRef.collection('/CurrentOrder').doc('shipmentInfo').update(this.state);
+        this.props.payment();
+        return dbResponse;
+      } catch (error) {
+        console.error(error);
+        alert('There seems to have been an issue creating your order.  Please try again.')
+        //2b. if there is an error, return error
+        return error;
+      }
+    } else {
+      //2. function to create shipment info and pwinty order
+      try {
+        //2a. push items to database
+        //todo: add push to database if shipment info is default for userData
+        const dbResponse = await userRef.collection('/CurrentOrder').doc('shipmentInfo').set(this.state);
+        this.props.payment();
+        return dbResponse;
+      } catch (error) {
+        console.error(error);
+        alert('There seems to have been an issue creating your order.  Please try again.')
+        //2b. if there is an error, return error
+        return error;
+      }
     }
   };
   
@@ -136,13 +231,18 @@ class ShipmentForm extends React.Component {
       return null;
     });
     return submit;
-  }
+  };
 
-  componentDidMount(){
-    if (this.props.shipmentInfo !== {}) {
-        this.setState(this.props.shipmentInfo)
+  componentDidMount = async () => {
+    if(this.props.pwintyId!==''){
+      //1. create a reference to where the shipment info is stored in database
+      const userRef = firebase.firestore().collection('User/').doc(this.props.userId);
+      const shippingData = await userRef.collection('CurrentOrder/').doc('shipmentInfo').get()
+      if(shippingData.exists){
+        this.setState(shippingData.data());
       }
-  }
+    }
+  };
 
   render() {
     return (

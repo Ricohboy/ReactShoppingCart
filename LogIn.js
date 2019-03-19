@@ -12,6 +12,7 @@ class LogIn extends React.Component{
     handleClick = async (e) => {
         const authMethod = e.target.id;
         if (authMethod === "google"){
+            //todo: signin with google
             const authProvider = new firebase.auth.GoogleAuthProvider();
             try{
                 await auth.signInWithPopup(authProvider)

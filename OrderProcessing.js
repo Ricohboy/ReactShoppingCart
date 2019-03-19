@@ -61,6 +61,7 @@ class OrderProcessing extends React.Component {
 
     //sends user back to cart
     //called from shopping cart page
+    //todo: allow user to update values if they return to cart
     backToCart = () => {
         this.setState({
           cart: true,
@@ -118,7 +119,7 @@ class OrderProcessing extends React.Component {
                 <section className="Content" id="Cart" onClick={this.props.releaseScroll}>
                     <div className="TranspBackground"></div>
                     <ShoppingBar closeImage={(e) => this.backToCart()} />
-                    <Shipment shipmentInfo={this.props.shipmentInfo} lockScroll={this.props.lockScroll} payment={this.payment} userId={this.props.userId} />
+                    <Shipment pwintyId={this.props.pwintyId} lockScroll={this.props.lockScroll} payment={this.payment} userId={this.props.userId} />
                 </section>
             );
         } else if(!this.state.cart && !this.state.checkout && !this.state.shipment && this.state.payment && this.props.pwintyId !== ''){

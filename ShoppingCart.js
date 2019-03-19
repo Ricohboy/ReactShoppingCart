@@ -227,7 +227,7 @@ class Display extends React.Component{
         return (
             <div key={this.props.index} className="CartItem">
                 <figure>
-                    <img src={this.props.item.Img.src} alt={this.props.item.Img.name} id={this.props.index} />
+                    <img src={this.props.item.Img.thumb} alt={this.props.item.Img.name} id={this.props.index} />
                     <figcaption onClick={(e) => this.removeItem(this.props.index)}>Remove</figcaption>
                 </figure>
                 <form>

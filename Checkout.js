@@ -3,9 +3,10 @@ import React from 'react';
 
 import {Type} from './ShoppingCart'
 
-//create a stateless component to display the shopping cart items
+
 class Checkout extends React.Component {
 
+    //write a function to call to calculate the subtotal based on chosen products
     subtotal = () => {
         let tempSubtotal = 0
         this.props.items.map((currItem) => {
@@ -21,6 +22,7 @@ class Checkout extends React.Component {
     }
 
     render(){
+        //call function inside render, this can be used in the return item
         const subtotal = this.subtotal();
         return (
         <div className="shoppingCart">
@@ -72,7 +74,7 @@ class Display extends React.Component{
         return (
             <div key={this.props.index} className="CartItem">
                 <figure>
-                    <img src={this.props.item.Img.src} alt={this.props.item.Img.name} id={this.props.index} />
+                    <img src={this.props.item.Img.thumb} alt={this.props.item.Img.name} id={this.props.index} />
                 </figure>
                     <table className="ContentInformation">
                     <tbody>

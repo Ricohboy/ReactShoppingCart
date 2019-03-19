@@ -36,40 +36,40 @@ class SubmitButton extends React.Component {
 
 //create a stateless component to display the shopping cart items
 class Payment extends React.Component {
-    constructor(props){
-        super(props);
+  constructor(props){
+      super(props);
 
-        this.handleSubmit = this.handleSubmit.bind(this);
+      this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleSubmit = async () => {
+    
+    //1. create a reference to where the order is validated
+    const validateRef = firebase.firestore().collection('User/').doc(this.props.userId).collection('CurrentOrder/').doc('Validate')
+    try {
+      const dbResponse = await validateRef.set({validate:true})
+      this.props.backToCart();
+      this.props.orderReview();
+      return dbResponse;
+    } catch (error) {
+      console.error(error);
+      alert('There seems to have been an issue processing your order.')
+      //2b. if there is an error, return error
+      return error;
     }
+  }
 
-    handleSubmit = async () => {
-        //1. create a reference to where the shipment info will be stored in database
-        const userRef = firebase.firestore().collection('User/').doc(this.props.userId);
-        //2. function to push shipment info to order data
-        const validate = async () => {
-        try {
-          //2a. push items to database
-          const dbResponse = await userRef.update({validate:true});
-          this.props.backToCart();
-          this.props.orderReview();
-          return dbResponse;
-        } catch (error) {
-          console.error(error);
-          alert('There seems to have been an issue processing your order.')
-          //2b. if there is an error, return error
-          return error;
-        }
-        };
-        //call the above function
-        validate();
-    }
+  componentDidMount = async () => {
+  }
 
-    render () {return (
+  render () {
+    return (
       <div>
         <h4>Pwinty Order ID: {this.props.pwintyId}</h4>
         <SubmitButton handleSubmit={this.handleSubmit} />
       </div>
-    )}
+    )
+  }
 }
 
 export default Payment;
