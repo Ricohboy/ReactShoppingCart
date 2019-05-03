@@ -3,6 +3,8 @@ import React from 'react';
 
 import {Type} from './ShoppingCart'
 
+import { Button } from 'react-bootstrap';
+
 
 class Checkout extends React.Component {
 
@@ -41,7 +43,7 @@ const ProductDisplay = (props) => {
         {props.items.map((currItem, index)=> 
             <Display key={index} index={index} item={currItem} ppPrices={props.ppPrices} mgmPrices={props.mgmPrices} />
         )}
-        <div className="shipmentButton" onClick={(e) => props.shipment(props.subtotal)}>Save and Continue</div>
+        <Button className="shipmentButton" onClick={(e) => props.shipment(e, props.subtotal)}>Save and Continue</Button>
     </div>
     )
 }

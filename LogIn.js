@@ -1,6 +1,10 @@
 import React from 'react';
 
+import {Button} from 'react-bootstrap'
+
 import firebase, { auth } from '../../Firebase';
+
+import google from './btn_google_signin_dark_pressed_web.png';
 
 class LogIn extends React.Component{
     constructor(props){
@@ -9,8 +13,7 @@ class LogIn extends React.Component{
         this.handleClick = this.handleClick.bind(this);
     }
 
-    handleClick = async (e) => {
-        const authMethod = e.target.id;
+    handleClick = async (authMethod) => {
         if (authMethod === "google"){
             //todo: signin with google
             const authProvider = new firebase.auth.GoogleAuthProvider();
@@ -27,13 +30,16 @@ class LogIn extends React.Component{
 
     render() {
         return (
-            <div className="authorization" onClick={(e)=>this.handleClick(e)}>
-                <div className="authButton" id="google">
-                    Sign In with Google
-                </div>
-                <div className="authButton" id="anon">
+            <div className="authorization">
+                <img src={google} alt="Sign In with Google" id="Google" className="auth"
+                    onClick={(e)=>{this.handleClick('google')}}    
+                />
+                <br/>
+                <Button className="auth" id="anon"
+                    onClick={(e)=>{this.handleClick('anon')}}
+                >
                     Sign In Anonomously (Can Not Recall Order)
-                </div>
+                </Button>
             </div>
         )
     }

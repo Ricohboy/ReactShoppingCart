@@ -2,6 +2,8 @@
 import React from 'react';
 import './ShoppingCart.css';
 
+import { Button } from 'react-bootstrap';
+
 //create an array of options to choos from
 export const Type=["Mid-Gloss Metal", "Photo Paper"]
 export const Size=["8x12", "16x24", "20x30", "24x36"]
@@ -145,7 +147,7 @@ class ProductDisplay extends React.Component {
                 {this.props.items.map((currItem, index)=> 
                     <Display item={currItem} removeItem={this.props.removeItem} index={index} key={index} productUpdate={this.productUpdate} ppPrices={this.props.ppPrices} mgmPrices={this.props.mgmPrices} />
                 )}
-                <div className="checkoutButton" onClick={(e) => this.props.checkout()}>Checkout</div>
+                <Button className="checkoutButton" onClick={(e) => this.props.checkout()}>Checkout</Button>
             </div>
         )
     }

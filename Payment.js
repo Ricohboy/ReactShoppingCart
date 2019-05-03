@@ -1,38 +1,41 @@
 import React from 'react';
+import {Elements, StripeProvider} from 'react-stripe-elements';
+import CheckoutForm from './CheckoutForm';
+
+import {Button} from 'react-bootstrap'
 
 import firebase from "../../Firebase";
 
-class SubmitButton extends React.Component {
-    constructor(props) {
-      super(props);
-      this.state = {
-          hasSubmitted: false,
-          message: "Promise you'll pay?"
-      }
-      this.handleSubmit = this.handleSubmit.bind(this);
+class CODButton extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+        hasSubmitted: false,
     }
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleSubmit = () => {
+    this.setState({hasSubmitted: true});
+    this.props.handleSubmit()
+  }
   
-    handleSubmit = () => {
-      this.setState({hasSubmitted: true});
-      this.props.handleSubmit()
-    }
-    
-    render() {
-      if (this.state.hasSubmitted) {
-        return (
-          <div className="submitButton">
-            Waiting on the Clouds . . .
-          </div>
-        )
-      } else {
-        return (
-          <div className="submitButton" onClick={(e)=>this.handleSubmit()}>
-            {this.state.message}
-          </div>
-        )
-      }
+  render() {
+    if (this.state.hasSubmitted) {
+      return (
+        <Button className="submitButton">
+          Waiting on the Clouds . . .
+        </Button>
+      )
+    } else {
+      return (
+        <Button className="submitButton" onClick={(e)=>this.handleSubmit()}>
+          Promise you'll pay?<br />Or Try:
+        </Button>
+      )
     }
   }
+}
 
 //create a stateless component to display the shopping cart items
 class Payment extends React.Component {
@@ -59,16 +62,21 @@ class Payment extends React.Component {
     }
   }
 
-  componentDidMount = async () => {
-  }
-
-  render () {
+  render() {
     return (
       <div>
         <h4>Pwinty Order ID: {this.props.pwintyId}</h4>
-        <SubmitButton handleSubmit={this.handleSubmit} />
+        <CODButton handleSubmit={this.handleSubmit} />
+        <StripeProvider apiKey="pk_test_Un1W2im9NOiQdgFDea37LaPv">
+          <div className="example">
+            <h4>React Stripe Elements Example</h4>
+            <Elements>
+              <CheckoutForm subtotal={this.props.subtotal} handleSubmit={this.handleSubmit} userId={this.props.userId} />
+            </Elements>
+          </div>
+        </StripeProvider>
       </div>
-    )
+    );
   }
 }
 

@@ -2,6 +2,8 @@ import React from "react";
 
 import firebase from "../../Firebase";
 
+import { Button, Form, Col } from 'react-bootstrap';
+
 const states = [
   "AL",  "AK",  "AS",  "AZ",  "AR",  "CA",  "CO",  "CT",
   "DE",  "DC",  "FM",  "FL",  "GA",  "GU",  "HI",  "ID",
@@ -86,14 +88,14 @@ class UseDefault extends React.Component {
     //only if there are any keys in the default address item
     if (keys.length !== 0) {
       return (
-        <div className="submitButton" onClick={(e)=>this.handleSubmit()}>
+        <Button className="submitButton" onClick={(e)=>this.handleSubmit()}>
           Use Default:<br/>
           {this.state.DefaultAddr.recipientName}<br/>
           {this.state.DefaultAddr.address1}<br/>
           {this.state.DefaultAddr.address2!=="" && this.state.DefaultAddr.address2}
           {this.state.DefaultAddr.address2!=="" && <br/>}
           {this.state.DefaultAddr.addressTownOrCity}, {this.state.DefaultAddr.stateOrCounty} {this.state.DefaultAddr.postalOrZipCode}<br/>
-        </div>
+        </Button>
       )
     }
     //1a. No default address specified. 
@@ -131,15 +133,15 @@ class SubmitButton extends React.Component {
     } else {
       return (
         <div>
-          <div className="submitButton" onClick={(e)=>this.validate(false)}>
+          <Button className="submitButton" onClick={(e)=>this.validate(false)}>
             Use Once<br/>
             {this.state.message}
-          </div>
+          </Button>
           <br/>
-          <div className="submitButton" onClick={(e)=>this.validate(true)}>
+          <Button className="submitButton" onClick={(e)=>this.validate(true)}>
             Set As Default<br/>
             {this.state.message}
-          </div>
+          </Button>
         </div>
       )
     }
@@ -156,7 +158,7 @@ class ShipmentForm extends React.Component {
       address1: "",
       address2: "",
       addressTownOrCity: "",
-      stateOrCounty: "",
+      stateOrCounty: "AL",
       postalOrZipCode: "",
       preferredShippingMethod: "Budget",
       email: ""
@@ -246,76 +248,115 @@ class ShipmentForm extends React.Component {
 
   render() {
     return (
-      <form>
-        <label id="recipientName">
-          Recipient Name:
-          <input
-            type="text"
-            name="recipientName"
-            value={this.state.recipientName}
-            onChange={event => this.handleUserInput(event)}
-          />
-        </label>
+      <Form>
+        <Form.Row>
+          <Col sm={2}>
+            <Form.Label id="recipientName">
+              Recipient Name:
+            </Form.Label>
+          </Col>
+          <Col sm={8}>
+            <Form.Control
+              type="text"
+              name="recipientName"
+              value={this.state.recipientName}
+              onChange={event => this.handleUserInput(event)}
+            />
+          </Col>
+        </Form.Row>
         
-        <label>
-          Address 1:
-          <input
-            type="text"
-            name="address1"
-            value={this.state.address1}
-            onChange={event => this.handleUserInput(event)}
-          />
-        </label>
+        <Form.Row>
+          <Col sm={2}>
+            <Form.Label>
+              Address 1:
+            </Form.Label>
+          </Col>
+          <Col sm={8}>
+            <Form.Control
+              type="text"
+              name="address1"
+              value={this.state.address1}
+              onChange={event => this.handleUserInput(event)}
+            />
+          </Col>
+        </Form.Row>
         
-        <label>
-          Address 2:
-          <input
-            type="text"
-            name="address2"
-            value={this.state.address2}
-            onChange={event => this.handleUserInput(event)}
-          />
-        </label>
+        <Form.Row>
+          <Col sm={2}>
+            <Form.Label>
+              Address 2:
+            </Form.Label>
+          </Col>
+          <Col sm={8}>
+            <Form.Control
+              type="text"
+              name="address2"
+              value={this.state.address2}
+              onChange={event => this.handleUserInput(event)}
+            />
+          </Col>
+        </Form.Row>
         
-        <label>
-          City, State:
-          <input
-            type="text"
-            name="addressTownOrCity"
-            className="city"
-            value={this.state.addressTownOrCity}
-            onChange={event => this.handleUserInput(event)}
-          />
-          <select
-            name="stateOrCounty"
-            value={this.state.stateOrCounty}
-            onChange={event => this.handleUserInput(event)}
-          >
-            {this.stateList}
-          </select>
-        </label>
+        <Form.Row>
+          <Col sm={2}>
+            <Form.Label>
+              City, State:
+            </Form.Label>
+          </Col>
+          <Col sm={6}>
+            <Form.Control
+              type="text"
+              name="addressTownOrCity"
+              className="city"
+              value={this.state.addressTownOrCity}
+              onChange={event => this.handleUserInput(event)}
+            />
+          </Col>
+          <Col sm={1}>
+            <Form.Control
+              as="select"
+              name="stateOrCounty"
+              value={this.state.stateOrCounty}
+              onChange={event => this.handleUserInput(event)}
+            >
+              {this.stateList}
+            </Form.Control>
+          </Col>
+        </Form.Row>
         
-        <label>
-          ZipCode:
-          <input
-            type="text"
-            name="postalOrZipCode"
-            value={this.state.postalOrZipCode}
-            onChange={event => this.handleUserInput(event)}
-          />
-        </label>
+        <Form.Row>
+          <Col sm={2}>
+            <Form.Label>
+              ZipCode:
+            </Form.Label>
+          </Col>
+          <Col sm={8}>
+            <Form.Control
+              type="text"
+              name="postalOrZipCode"
+              value={this.state.postalOrZipCode}
+              onChange={event => this.handleUserInput(event)}
+            />
+          </Col>
+        </Form.Row>
         
-        <label>
-          eMail:
-          <input
-            type="text"
-            name="email"
-            value={this.state.email}
-            onChange={event => this.handleUserInput(event)}
-          />
-        </label>
+        <Form.Row>
+          <Col sm={2}>
+            <Form.Label>
+              eMail:
+            </Form.Label>
+          </Col>
+          <Col sm={8}>
+            <Form.Control
+              type="text"
+              name="email"
+              value={this.state.email}
+              onChange={event => this.handleUserInput(event)}
+            />
+          </Col>
+        </Form.Row>
         <SubmitButton handleSubmit={this.handleSubmit} canSubmit={this.validate()} />
-      </form>
+      </Form>
     );
   }
 }

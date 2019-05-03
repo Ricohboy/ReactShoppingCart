@@ -38,7 +38,7 @@ class OrderProcessing extends React.Component {
 
     //changes the state show the shipment page is rendered
     //called from shopping cart page
-    shipment = (subtotal) => {
+    shipment = async (e, subtotal) => {
         this.setState({
             cart: false,
             checkout: false,
